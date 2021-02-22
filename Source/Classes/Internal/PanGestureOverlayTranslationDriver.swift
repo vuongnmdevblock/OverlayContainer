@@ -7,7 +7,7 @@
 
 import UIKit
 
-class PanGestureOverlayTranslationDriver: NSObject, OverlayTranslationDriver {
+class PanGestureOverlayTranslationDriver: NSObject, OverlayTranslationDriver, UIGestureRecognizerDelegate {
 
     private weak var translationController: OverlayTranslationController?
     private let panGestureRecognizer: OverlayTranslationGestureRecognizer
@@ -19,6 +19,7 @@ class PanGestureOverlayTranslationDriver: NSObject, OverlayTranslationDriver {
         self.translationController = translationController
         self.panGestureRecognizer = panGestureRecognizer
         super.init()
+        panGestureRecognizer.delegate = self
         panGestureRecognizer.addTarget(self, action: #selector(overlayPanGestureAction(_:)))
     }
 
@@ -26,6 +27,14 @@ class PanGestureOverlayTranslationDriver: NSObject, OverlayTranslationDriver {
 
     func clean() {
         // no-op
+    }
+    
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard let view = gestureRecognizer.view,
+              let gesture = gestureRecognizer as? OverlayTranslationGestureRecognizer else {
+            return false
+        }
+        return translationController?.isDraggable(at: gesture.startingLocation, in: view) ?? false
     }
 
     // MARK: - Action
